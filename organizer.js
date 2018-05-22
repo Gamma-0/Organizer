@@ -6,6 +6,29 @@
 		|| window.opera
 	) { return; }
 
+	/*page = {
+		title: "t",
+		targets: "ts",
+		target: {
+			title: "t",
+			items: "i",
+			item: {
+				title: "t",
+				content: "c"
+			}
+		}
+	};
+	var page = {
+		title: null,
+		targets: [{
+			title: null,
+			items: [{
+				title: null,
+				content: null
+			}]
+		}]
+	}*/
+
 	//get the collection of draggable targets and add their draggable attribute
 	for (var
 		targets = document.querySelectorAll('[data-draggable="target"]'),
@@ -322,7 +345,9 @@
 				droptarget = null;
 			}
 		} else {
-			selections.dropposition.className = selections.dropposition.className.replace(/ dragover/g, '');
+			if (selections.dropposition) {
+				selections.dropposition.className = selections.dropposition.className.replace(/ dragover/g, '');
+			}
 			selections.dropposition = null;
 		}
 		if (droptarget == selections.owner) { //if the target is the owner then it's not a valid drop target
@@ -402,9 +427,9 @@
 						e.target.parentNode.insertBefore(iPES, selections.items[i]);
 					}
 				} else {
-					for(var len = selections.items.length, i = 0; i < len; i++) {
+					for (var len = selections.items.length, i = 0; i < len; i++) {
 						let iNES = selections.items[i].nextElementSibling;
-						e.taeget.appendChild(iNES);
+						e.target.appendChild(iNES);
 						e.target.insertBefore(selections.items[i], iNES);
 					}
 				}
@@ -470,6 +495,12 @@
 		item.setAttribute('draggable', 'true');
 		item.setAttribute('aria-grabbed', 'false');
 		item.setAttribute('tabindex', '0');
+
+		let itemposition = document.createElement("li");
+		itemposition.setAttribute("data-draggable","position");
+		target.appendChild(itemposition);
+		itemposition.setAttribute('aria-dropeffect', 'none');
+
 		//items = document.querySelectorAll('[data-draggable="item"]');
 	}
 
@@ -520,6 +551,7 @@
 			let node = e.target.parentNode.querySelectorAll('[data-draggable="target"]')[0];
 			appendChildItemToNode(node);
 			items = document.querySelectorAll('[data-draggable="item"]');
+			positions = document.querySelectorAll('[data-draggable="position"]');
 		}
 		else if (e.target.className == "add-list") {
 			let main = document.getElementById("group");
@@ -528,6 +560,13 @@
 		}
 		else if (e.target.className == "close-memolist" || e.target.className == "close-item") {
 			let memolist = e.target.parentNode;
+			if (e.target.className == "close-item") {
+				memolist.parentNode.removeChild(memolist.nextElementSibling);
+				items = document.querySelectorAll('[data-draggable="item"]');
+				positions = document.querySelectorAll('[data-draggable="position"]');
+			} else {
+				targets = document.querySelectorAll('[data-draggable="target"]');
+			}
 			memolist.parentNode.removeChild(memolist);
 		}
 
@@ -566,7 +605,6 @@
 			if (currentInput.node.className == "item-title" || currentInput.node.className == "item-content")
 				currentInput.node.parentNode.setAttribute('draggable', 'true');
 
-			// TODO!!!!!
 			if (text == ''){
 				if (currentInput.node.className == "item-content") {
 					appendChildAddContentToNode(currentInput.node.parentNode);

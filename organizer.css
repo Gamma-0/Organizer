@@ -162,10 +162,10 @@ input, textarea {
 }
 
 [data-draggable="position"][aria-dropeffect="move"] {
-	border: 0.2rem dotted #68b;
-	height: 0.4rem;
-	margin: 0.2rem 0;
+	background: linear-gradient(to top, transparent 40%, #68b 40%, #68b 60%, transparent 60%);
 }
 [data-draggable="position"][aria-dropeffect="move"].dragover {
 	background: #fff;
+	border: 0.2rem dotted #68b;
+	margin: 0.1rem 0;
 }
