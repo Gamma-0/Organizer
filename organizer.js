@@ -6,20 +6,21 @@
 		|| window.opera
 	) { return; }
 
-	/*page = {
-		title: "t",
-		targets: "ts",
-		target: {
-			title: "t",
-			items: "i",
-			item: {
-				title: "t",
-				content: "c"
-			}
-		}
-	};
 	var page = {
-		title: null,
+		title: "t",
+		targets: "m"
+	};
+	var target = {
+		title: "t",
+		items: "i"
+	}
+	var item = {
+		title: "t",
+		content: "c"
+	}
+
+	var pages = {}; //Array();
+	/*	title: null,
 		targets: [{
 			title: null,
 			items: [{
@@ -29,6 +30,18 @@
 		}]
 	}*/
 
+	/***************************
+	 ***** TOOLS FUNCTIONS *****
+	 ***************************/
+	function removeAllChildren(node) {
+		while (node.firstChild) {
+			node.removeChild(node.firstChild);
+		}
+	}
+
+	/*********************************
+	 ***** DRAG & DROP FUNCTIONS *****
+	 *********************************/
 	//get the collection of draggable targets and add their draggable attribute
 	for (var
 		targets = document.querySelectorAll('[data-draggable="target"]'),
@@ -444,6 +457,9 @@
 	}, false);
 
 
+	/****************************
+	***** LANGUAGE FUNCTION *****
+	******************************/
 	var defaultText = null;
 	function defaultLanguage(lang) {
 		switch (lang) {
@@ -465,9 +481,11 @@
 				}
 		}
 	}
-	defaultLanguage();
+	defaultLanguage("FR");
 
-	/* Function to easily add component */
+	/*************************************
+	***** ADDING COMPONENT FUNCTIONS *****
+	**************************************/
 	function appendChildAddContentToNode(node) {
 		let addcontent = document.createElement("div");
 		addcontent.className = "add-content";
@@ -475,13 +493,31 @@
 		node.appendChild(addcontent);
 	}
 
-	function appendChildItemToNode(target) {
+	function appendChildContentToNode(item, content = defaultText.itemcontent) {
+		let itemcontent = document.createElement("p");
+		itemcontent.className = "item-content";
+		itemcontent.appendChild(document.createTextNode(content));
+		item.appendChild(itemcontent);
+
+		return itemcontent;
+	}
+
+	function appendChildPositionToNode(target) {
+		let itemposition = document.createElement("li");
+		itemposition.setAttribute("data-draggable","position");
+		target.appendChild(itemposition);
+		itemposition.setAttribute('aria-dropeffect', 'none');
+
+		return itemposition;
+	}
+
+	function appendChildItemToNode(target, title = defaultText.itemtitle) {
 		let item = document.createElement("li");
 		item.setAttribute("data-draggable","item");
 
 		let itemtitle = document.createElement("span");
 		itemtitle.className = "item-title";
-		itemtitle.appendChild(document.createTextNode(defaultText.itemtitle));
+		itemtitle.appendChild(document.createTextNode(title));
 
 		let closeitem = document.createElement("div");
 		closeitem.className = "close-item";
@@ -496,15 +532,13 @@
 		item.setAttribute('aria-grabbed', 'false');
 		item.setAttribute('tabindex', '0');
 
-		let itemposition = document.createElement("li");
-		itemposition.setAttribute("data-draggable","position");
-		target.appendChild(itemposition);
-		itemposition.setAttribute('aria-dropeffect', 'none');
+		appendChildPositionToNode(target);
 
 		//items = document.querySelectorAll('[data-draggable="item"]');
+		return item;
 	}
 
-	function appendChildMemoListToNode(node) {
+	function appendChildMemoListToNode(node, title = defaultText.memotitle) {
 		let memolist = document.createElement("div");
 		memolist.className = "memolist";
 
@@ -514,10 +548,11 @@
 
 		let memotitle = document.createElement("span");
 		memotitle.className = "memo-title";
-		memotitle.appendChild(document.createTextNode(defaultText.memotitle));
+		memotitle.appendChild(document.createTextNode(title));
 
 		let target = document.createElement("ol");
 		target.setAttribute("data-draggable","target");
+		appendChildPositionToNode(target);
 
 		let additem = document.createElement("span");
 		additem.className = "add-item";
@@ -530,22 +565,103 @@
 		node.appendChild(memolist);
 
 		target.setAttribute('aria-dropeffect', 'none');
+		return target;
+	}
+
+	/*************************
+	 ***** LOCAL STORAGE *****
+	 *************************/
+	function readLocalStorage() {
+		if (typeof localStorage!='undefined') {
+			pages = localStorage.getItem('pages');
+			if (pages!=null) {
+				pages = JSON.parse(pages);
+				load();
+			} else { pages = {}; }
+		} else {
+			alert("localStorage n'est pas supporté");
+		}
+	}
+
+	function setInLocalStorage() {
+		if (Object.keys(pages).length !== 0)
+			localStorage.setItem('pages', JSON.stringify(pages));
+		else
+			localStorage.removeItem('pages');
+	}
+
+	function clearStorage() {
+		localStorage.clear();
+	}
+
+	/********************************
+	***** SAVE & LOAD FUNCTIONS *****
+	*********************************/
+	function save() {
+		pages[page.title] = document.getElementsByClassName("page-title")[0].firstChild.data;
+		pages[page.targets] = Array();
+		let targetsInPage = document.getElementsByClassName("memolist");
+		for (let i = 0; i < targetsInPage.length; ++i) {
+			pages[page.targets][i] = {};
+			pages[page.targets][i][target.title] = targetsInPage[i].getElementsByClassName("memo-title")[0].firstChild.data;
+			let itemsInTarget = targetsInPage[i].querySelectorAll('[data-draggable="item"]');
+			pages[page.targets][i][target.items] = Array();
+			for (let j = 0; j < itemsInTarget.length; ++j) {
+				pages[page.targets][i][target.items][j] = {};
+				pages[page.targets][i][target.items][j][item.title] = itemsInTarget[j].getElementsByClassName("item-title")[0].firstChild.data;
+
+				let itemcontent = itemsInTarget[j].getElementsByClassName("item-content");
+				if (itemcontent.length !== 0)
+					pages[page.targets][i][target.items][j][item.content] = itemcontent[0].firstChild.data;
+			}
+		}
+		//console.log(pages);
+		setInLocalStorage();
+	}
+
+	function load() {
+		if (Object.keys(pages).length == 0) return;
+
+		document.getElementsByClassName("page-title")[0].firstChild.data = pages[page.title];
+		let main = document.getElementById("group");
+		removeAllChildren(main);
+		for (let i = 0; i < pages[page.targets].length; ++i) {
+			let nodeTarget = appendChildMemoListToNode(main, pages[page.targets][i][target.title]);
+			for (let j = 0; j < pages[page.targets][i][target.items].length; ++j) {
+				let nodeItem = appendChildItemToNode(nodeTarget, pages[page.targets][i][target.items][j][item.title]);
+				let content = pages[page.targets][i][target.items][j][item.content];
+				if (content !== undefined) {
+					appendChildContentToNode(nodeItem, content);
+					//nodeItem.removeChild(nodeItem.getElementsByClassName("add-content")[0]);
+					nodeItem.getElementsByClassName("add-content")[0].style.display='none';
+				}
+			}
+		}
+		targets = document.querySelectorAll('[data-draggable="target"]');
+		items = document.querySelectorAll('[data-draggable="item"]');
+		positions = document.querySelectorAll('[data-draggable="position"]');
+	}
+
+	/*************************************
+	***** TASKS MANAGEMENT FUNCTIONS *****
+	**************************************/
+	function resizeTargets() {
+		for (i = 0; i < targets.length; ++i) {
+			targets[i].style.height = ""; // "auto"
+			targets[i].style.height = "calc(" + targets[i].parentNode.clientHeight + "px - 3.6rem)";
+		}
 	}
 
 	var currentInput = {
 		node: null,
 		content: ''
 	};
-	document.addEventListener('click', function(e) { //addItem(e) {
+
+	document.addEventListener('click', function(e) {
 		if (e.target.className == "add-content") {
-			let memolist = e.target.parentNode;
-
-			let itemcontent = document.createElement("p");
-			itemcontent.className = "item-content";
-			itemcontent.appendChild(document.createTextNode(defaultText.itemcontent));
-
-			memolist.appendChild(itemcontent);
-			memolist.removeChild(e.target);
+			appendChildContentToNode(e.target.parentNode);
+			//e.target.parentNode.removeChild(e.target);
+			e.target.style.display='none';
 		}
 		else if (e.target.className == "add-item") {
 			let node = e.target.parentNode.querySelectorAll('[data-draggable="target"]')[0];
@@ -553,10 +669,11 @@
 			items = document.querySelectorAll('[data-draggable="item"]');
 			positions = document.querySelectorAll('[data-draggable="position"]');
 		}
-		else if (e.target.className == "add-list") {
+		else if (e.target.id == "add-list") {
 			let main = document.getElementById("group");
- 			appendChildMemoListToNode(main);
+			appendChildMemoListToNode(main);
 			targets = document.querySelectorAll('[data-draggable="target"]');
+			positions = document.querySelectorAll('[data-draggable="position"]');
 		}
 		else if (e.target.className == "close-memolist" || e.target.className == "close-item") {
 			let memolist = e.target.parentNode;
@@ -570,7 +687,7 @@
 			memolist.parentNode.removeChild(memolist);
 		}
 
-		else if ((e.target.className == "page-title"
+		else if (( e.target.className == "page-title"
 				|| e.target.className == "memo-title"
 				|| e.target.className == "item-title"
 				|| e.target.className == "item-content")
@@ -594,6 +711,9 @@
 			currentInput.node = e.target;
 			currentInput.content = input.value;
 		}
+		else if (e.target.id == "save") save();
+		else if (e.target.id == "load") load();
+		resizeTargets();
 	}, false);
 
 
@@ -607,7 +727,8 @@
 
 			if (text == ''){
 				if (currentInput.node.className == "item-content") {
-					appendChildAddContentToNode(currentInput.node.parentNode);
+					//appendChildAddContentToNode(currentInput.node.parentNode);
+					currentInput.node.parentNode.getElementsByClassName("add-content")[0].style.display='';
 					currentInput.node.parentNode.removeChild(currentInput.node);
 				}
 				else {//if (currentInput.node.className == "item-title" || currentInput.node.className == "memo-title" || currentInput.node.className == "page-title") {
@@ -627,4 +748,7 @@
 	document.addEventListener('keydown', textFocus, false);
 	document.addEventListener('keyup', textFocus, false);
 
+	window.addEventListener("resize", resizeTargets);
+
+	readLocalStorage(); load();
 })();

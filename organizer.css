@@ -9,9 +9,9 @@ html, body {
 body {
 	font-size:0.8rem;
 	margin: 0;
-	background: linear-gradient(to right , #fff3, #Fff3),
+	/*background: linear-gradient(to right , #fff3, #Fff3),
 		linear-gradient(to right , #0fe9, #F559),
-		linear-gradient(to bottom, #839, #F5E);
+		linear-gradient(to bottom, #839, #F5E);*/
 }
 header {
 	padding: 0.5rem;
@@ -32,19 +32,30 @@ main {
 	overflow: auto;
 }
 
-#add-list-button {
-	float: right;
+#save {}
+#load {}
+header .btn {
+	display: inline-block;
 	border: 1px solid #fff;
 	border-radius: 5px;
 	height: 1.5rem;
-	width: 1.5rem;
+	/*width: 1.5rem;*/
 	text-align: center;
 	font-size: 1.1rem;
 	line-height: 1.3rem;
 	font-weight: bold;
 	box-sizing: border-box;
+	margin: 0 0.15rem;
+	padding: 0 0.2rem;
 }
-#add-list-button:hover {
+
+#add-list {
+	float: right;
+	width: 1.5rem;
+	text-align: center;
+	font-weight: bold;
+}
+header .btn:hover {
 	background-color: rgba(0,0,0,0.3);
 }
 .close-item {
@@ -54,7 +65,7 @@ main {
 	font-size: 0.7rem;
 	transform: rotate(135deg);
 }
-.close-memolist, .close-item, .add-content, .add-item, .add-list {
+.close-memolist, .close-item, .add-content, .add-item, #add-list {
 	float: right;
 	cursor: pointer;
 }
@@ -84,11 +95,27 @@ main {
 }
 
 .memo-title {
-	font-size: 1.2rem;
+	font-size: 1rem;
 	/*font-weight: bold;*/
+	text-overflow: ellipsis;
+	overflow: hidden;
+	white-space: nowrap;
+	width: calc(100% - 1.3rem); /*0.8 pour la font-size de la croix et 0.5 pour le padding avec la croix*/
+	display: block;
 }
 .memo-title input {
-	width: calc(100% - 1.3rem); /*0.8 pour la font-size de la croix et 0.5 pour le padding avec la croix*/
+	font-size: inherit;
+	padding: 0 0.2rem;
+	width: 100%;
+}
+
+.item-title {
+	background: lightblue;
+	margin: calc(-.2rem - 1px) calc(-.4rem - 1px);
+	padding: .2rem .4rem;
+	border-radius: 0.2rem 0.2rem 0 0;
+	border: 1px solid #999;
+	display: block;
 }
 .item-title input {
 	width: calc(100% - 1.6rem);  /*0.5 pour la font-size de la croix, 0.7 pour le crayon et 0.4 pour le padding avec la croix*/
@@ -105,7 +132,6 @@ input, textarea {
 /* draggable targets */
 [data-draggable="target"] {
 	list-style-type:none;
-	max-height: calc(100vh - 8.5rem);
 	overflow-y:auto;
 	box-sizing: border-box;
 	margin: 0;

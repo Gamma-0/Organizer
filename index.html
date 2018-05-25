@@ -8,7 +8,9 @@
 	<body>
 		<header>
 			<div class="page-title">Titre de la page</div>
-			<div id="add-list-button" class="add-list">+</div> <!-- Ajouter une liste -->
+			<div id="load" class="btn">Load</div>
+			<div id="save" class="btn">Save</div>
+			<div id="add-list" class="btn">+</div> <!-- Ajouter une liste -->
 		</header>
 		<main id="group">
 			<div class="memolist">
@@ -30,6 +32,7 @@
 					<li data-draggable="position"></li>
 					<li data-draggable="item">
 						<div class="close-item">╳</div>
+						<div class="add-content" style="display:none">✏</div>
 						<span class="item-title">J'ai une description !</span>
 						<p class="item-content">Supprime moi en effaçant tout mon contenu ! Pour cela, faut cliquer sur moi aussi.</p>
 					</li>
@@ -42,6 +45,7 @@
 					<li data-draggable="position"></li>
 					<li data-draggable="item">
 						<div class="close-item">╳</div>
+						<div class="add-content" style="display:none">✏</div>
 						<span class="item-title">Déplace moi !</span>
 						<p class="item-content">Appuie sur moi avec ta souris, déplace moi et relâche le bouton quand je suis dans une des boîtes qui s'afficheront en bleu.</p>
 					</li>
@@ -56,6 +60,7 @@
 					<li data-draggable="position"></li>
 					<li data-draggable="item">
 						<div class="close-item">╳</div>
+						<div class="add-content" style="display:none">✏</div>
 						<span class="item-title">Item 0</span>
 						<p class="item-content">Content for item 0</p>
 					</li>
